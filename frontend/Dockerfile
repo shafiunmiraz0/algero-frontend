@@ -29,10 +29,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy runtime environment injection script
-#COPY docker/env.sh /docker-entrypoint.d/40-env-config.sh
-#RUN chmod +x /docker-entrypoint.d/40-env-config.sh
+COPY docker/env.sh /docker-entrypoint.d/40-env-config.sh
+RUN sed -i 's/\r$//' /docker-entrypoint.d/40-env-config.sh && chmod +x /docker-entrypoint.d/40-env-config.sh
 
 EXPOSE 80
-
-# Start Nginx in the foreground
-CMD ["nginx", "-g", "daemon off;"]

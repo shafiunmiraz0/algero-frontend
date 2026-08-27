@@ -1,7 +1,7 @@
 services:
   # ─── PostgreSQL Database ────────────────────────────────────
   postgres:
-    image: postgres:16-alpine
+    image: postgres:17
     container_name: algero-postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-algero}

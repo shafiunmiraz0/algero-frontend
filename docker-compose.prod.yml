@@ -1,0 +1,77 @@
+services:
+  # ─── PostgreSQL Database ────────────────────────────────────
+  postgres:
+    image: postgres:17
+    container_name: algero-postgres
+    environment:
+      POSTGRES_DB: algero
+      POSTGRES_USER: algero
+      POSTGRES_PASSWORD: algero_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U algero -d algero"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ─── Laravel Backend ────────────────────────────────────────
+  backend:
+    image: shafiunmiraz/algero:backend-v2
+    container_name: algero-backend
+    ports:
+      - "8000:8000"
+    environment:
+      APP_NAME: Algero
+      APP_ENV: production
+      APP_KEY: "base64:F76izwMnPowJyam77F6Q5cEt92a7o9mA5g5UiEvquCo="
+      APP_DEBUG: "true"
+      APP_URL: https://algero-backend.bitbd.net
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: algero
+      DB_USERNAME: algero
+      DB_PASSWORD: algero_secret
+      BCRYPT_ROUNDS: 12
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+      SANCTUM_STATEFUL_DOMAINS: algero.bitbd.net,algero-backend.bitbd.net
+      FRONTEND_URL: https://algero.bitbd.net
+      ADMIN_EMAIL: admin@algero.com
+      ADMIN_PASSWORD: "P@ssw0rd!"
+      MAIL_MAILER: log
+      MAIL_HOST: 127.0.0.1
+      MAIL_PORT: 2525
+      MAIL_USERNAME: "null"
+      MAIL_PASSWORD: "null"
+      MAIL_FROM_ADDRESS: hello@algero.com
+      MAIL_FROM_NAME: Algero
+      RECAPTCHA_SECRET_KEY: "6LdE8RgtAAAAAI8pUjulY1jFqJGmqtaXGs9f8_RJ"
+    volumes:
+      - uploads:/var/www/html/storage/app/public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─── React Frontend ────────────────────────────────────────
+  frontend:
+    image: shafiunmiraz/algero:frontend-v2
+    container_name: algero-frontend
+    ports:
+      - "3000:80"
+    environment:
+      VITE_API_URL: https://algero-backend.bitbd.net
+      VITE_RECAPTCHA_SITE_KEY: 6LdE8RgtAAAAAFmyZ_N5W__JBq21WkawDR_pypCG
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  uploads:

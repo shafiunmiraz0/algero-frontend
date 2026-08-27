@@ -1,0 +1,35 @@
+services:
+  # ─── PostgreSQL Database ────────────────────────────────────
+  postgres:
+    image: postgres:17
+    container_name: algero-postgres
+    environment:
+      POSTGRES_DB: algero
+      POSTGRES_USER: algero
+      POSTGRES_PASSWORD: algero_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U algero -d algero"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ─── React Frontend ────────────────────────────────────────
+  frontend:
+    image: shafiunmiraz/algero:frontend-v1
+    container_name: algero-frontend
+    ports:
+      - "3000:80"
+    environment:
+      VITE_API_URL: http://localhost:8000
+      VITE_RECAPTCHA_SITE_KEY: 6LeMs9osAAAAAOL0_CLfyiR4NLzzS0Xv7vubFQNz
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  pgdata:
